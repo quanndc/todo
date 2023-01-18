@@ -1,3 +1,4 @@
+import { authReducer } from './../reducers/auth.reducer';
 import { AngularFireModule } from '@angular/fire/compat/';
 import {AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { NgModule } from '@angular/core';
@@ -12,7 +13,10 @@ import { environment } from '../environments/environment';
 import { provideAuth,getAuth } from '@angular/fire/auth';
 import { provideDatabase,getDatabase } from '@angular/fire/database';
 import { provideFirestore,getFirestore } from '@angular/fire/firestore';
-
+import { AuthEffect } from 'src/effects/auth.effect';
+import { HttpClientModule } from '@angular/common/http';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreModule } from '@ngrx/store';
 @NgModule({
   declarations: [
     AppComponent,
@@ -27,7 +31,11 @@ import { provideFirestore,getFirestore } from '@angular/fire/firestore';
     provideDatabase(() => getDatabase()),
     provideFirestore(() => getFirestore()),
     AngularFireModule.initializeApp(environment.firebase),
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    StoreModule.forRoot({auth: authReducer}, {}),
+    EffectsModule.forRoot([AuthEffect]),
+    HttpClientModule,
+
   ],
   providers: [],
   bootstrap: [AppComponent]

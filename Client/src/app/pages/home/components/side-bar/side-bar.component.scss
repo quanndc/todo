@@ -85,3 +85,22 @@
     justify-items: flex-start;
     // margin-left: 15px;
 }
+
+.user{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user p{
+    padding-top: 12px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.user img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}

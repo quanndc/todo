@@ -1,3 +1,4 @@
+import { AuthService } from 'src/app/services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Task } from 'src/app/models/task.model';
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
@@ -27,19 +28,20 @@ export class HomeComponent {
   inProgress = this.store.collection('inProgress').valueChanges({ idField: 'id' }) as Observable<Task[]>;
   done = this.store.collection('done').valueChanges({ idField: 'id' }) as Observable<Task[]>;
 
-  constructor(private dialog: MatDialog, private store: AngularFirestore) {}
+  constructor(private dialog: MatDialog, private store: AngularFirestore, public authService: AuthService) {
+  }
 
   newTask(): void {
     const dialogRef = this.dialog.open(TaskDialogComponent, {
       width: '270px',
       data: {
-        task: {},
+        task: <Task>{},
       },
     });
     dialogRef
       .afterClosed()
       .subscribe((result: TaskDialogResult) => {
-        if (!result) {
+        if (!result || result.task.title === '') {
           return;
         }
         this.store.collection('todo').add(result.task);

@@ -1,4 +1,6 @@
+import { AuthService } from 'src/app/services/auth.service';
 import { Component, OnInit } from '@angular/core';
+import { User, getAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-side-bar',
@@ -7,7 +9,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SideBarComponent implements OnInit {
 
-  constructor() { }
+  constructor(public authService: AuthService) {
+  }
 
   ngOnInit(): void {
   }

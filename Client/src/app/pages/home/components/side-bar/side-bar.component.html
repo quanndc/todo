@@ -11,6 +11,12 @@
                     Runway Club
                 </h2>
            </div>
+           <div class="user">
+                <img [src]="authService.user?.photoURL" alt="">
+                <p>
+                    {{authService.user?.displayName}}
+                </p>
+           </div>
            <div class="choice">
                 <button>
                     <i class="fi fi-rr-home"></i>
