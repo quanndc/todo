@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "todo-c6a6a": {
+      "hosting": {
+        "client": [
+          "todo-c6a6a"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "todo-c6a6a"
+  }
+}

@@ -4,15 +4,30 @@ import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { TaskDialogComponent } from '../../../app/pages/home/components/task-dialog/task-dialog.component';
 import { TaskDialogResult } from 'src/app/models/task-dialog.model';
+import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/compat/firestore';
+import { Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+
+
+const getObservable = (collection: AngularFirestoreCollection<Task>) => {
+  const subject = new BehaviorSubject<Task[]>([]);
+  collection.valueChanges({ idField: 'id' }).subscribe((val: Task[]) => {
+    subject.next(val);
+  });
+  return subject;
+};
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
+  todo = this.store.collection('todo').valueChanges({ idField: 'id' }) as Observable<Task[]>;
+  inProgress = this.store.collection('inProgress').valueChanges({ idField: 'id' }) as Observable<Task[]>;
+  done = this.store.collection('done').valueChanges({ idField: 'id' }) as Observable<Task[]>;
 
-  constructor(private dialog: MatDialog) { }
+  constructor(private dialog: MatDialog, private store: AngularFirestore) {}
 
   newTask(): void {
     const dialogRef = this.dialog.open(TaskDialogComponent, {
@@ -23,27 +38,13 @@ export class HomeComponent implements OnInit {
     });
     dialogRef
       .afterClosed()
-      .subscribe((result: TaskDialogResult|undefined) => {
+      .subscribe((result: TaskDialogResult) => {
         if (!result) {
           return;
         }
-        this.todo.push(result.task);
+        this.store.collection('todo').add(result.task);
       });
   }
-
-  todo: Task[] = [
-    {
-      title: 'Buy milk',
-      description: 'Go to the store and buy milk'
-    },
-    {
-      title: 'Create a Kanban app',
-      description: 'Using Firebase and Angular create a Kanban app!'
-    }
-  ];
-
-  inProgress: Task[] = [];
-  done: Task[] = [];
 
   editTask(list: 'done' | 'todo' | 'inProgress', task: Task): void {
     const dialogRef = this.dialog.open(TaskDialogComponent, {
@@ -53,27 +54,33 @@ export class HomeComponent implements OnInit {
         enableDelete: true,
       },
     });
-    dialogRef.afterClosed().subscribe((result: TaskDialogResult|undefined) => {
+    dialogRef.afterClosed().subscribe((result: TaskDialogResult) => {
       if (!result) {
         return;
       }
-      const dataList = this[list];
-      const taskIndex = dataList.indexOf(task);
       if (result.delete) {
-        dataList.splice(taskIndex, 1);
+        this.store.collection(list).doc(task.id).delete();
       } else {
-        dataList[taskIndex] = task;
+        this.store.collection(list).doc(task.id).update(task);
       }
     });
   }
 
-  drop(event: CdkDragDrop<Task[]|any>): void{
+  drop(event: CdkDragDrop<Task[]|null>): void {
     if (event.previousContainer === event.container) {
       return;
     }
-    if (!event.container.data || !event.previousContainer.data) {
+    if (!event.previousContainer.data || !event.container.data) {
       return;
     }
+    const item = event.previousContainer.data[event.previousIndex];
+    this.store.firestore.runTransaction(() => {
+      const promise = Promise.all([
+        this.store.collection(event.previousContainer.id).doc(item.id).delete(),
+        this.store.collection(event.container.id).add(item),
+      ]);
+      return promise;
+    });
     transferArrayItem(
       event.previousContainer.data,
       event.container.data,
@@ -81,8 +88,6 @@ export class HomeComponent implements OnInit {
       event.currentIndex
     );
   }
-
-  
  
 
   ngOnInit(): void {

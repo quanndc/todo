@@ -11,7 +11,7 @@ export class TaskComponent implements OnInit {
   constructor() { }
 
 
-  @Input() task: Task | null = null;
+  @Input() task: Task | any = null;
   @Output() edit = new EventEmitter<Task>();
 
 
